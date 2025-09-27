@@ -8,27 +8,19 @@ import (
 	"strings"
 	"time"
 
+	"docker-monitor/logger"
+
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/sirupsen/logrus"
 )
 
-type ContainerMetrics struct {
-	Name        string            `json:"name"`
-	Status      string            `json:"status"`
-	Image       string            `json:"image"`
-	CPUPercent  float64           `json:"cpu_percent"`
-	MemoryUsage string            `json:"memory_usage"`
-	MemoryLimit string            `json:"memory_limit"`
-	Timestamp   time.Time         `json:"timestamp"`
-	Labels      map[string]string `json:"labels"`
-}
 
 type Monitor struct {
-	client    *client.Client
-	logger    *logrus.Logger
-	frequency time.Duration
-	project   string
+	client      *client.Client
+	logManager  *logger.LogManager
+	frequency   time.Duration
+	project     string
 }
 
 func NewMonitor() (*Monitor, error) {
@@ -37,9 +29,24 @@ func NewMonitor() (*Monitor, error) {
 		return nil, fmt.Errorf("failed to create Docker client: %w", err)
 	}
 
-	logger := logrus.New()
-	logger.SetFormatter(&logrus.JSONFormatter{})
-	logger.SetLevel(logrus.InfoLevel)
+	// Initialize log manager
+	logManager := logger.NewLogManager()
+
+	// Try to load config from file first, then environment
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile == "" {
+		configFile = "/app/config.json"
+	}
+
+	if _, err := os.Stat(configFile); err == nil {
+		if err := logManager.LoadConfigFromFile(configFile); err != nil {
+			return nil, fmt.Errorf("failed to load config from file %s: %w", configFile, err)
+		}
+	} else {
+		if err := logManager.LoadConfigFromEnv(); err != nil {
+			return nil, fmt.Errorf("failed to load log config: %w", err)
+		}
+	}
 
 	// Get monitoring frequency from environment variable (default: 30 seconds)
 	frequencyStr := os.Getenv("MONITOR_FREQUENCY")
@@ -61,10 +68,10 @@ func NewMonitor() (*Monitor, error) {
 	}
 
 	return &Monitor{
-		client:    cli,
-		logger:    logger,
-		frequency: frequency,
-		project:   project,
+		client:      cli,
+		logManager:  logManager,
+		frequency:   frequency,
+		project:     project,
 	}, nil
 }
 
@@ -129,12 +136,12 @@ func (m *Monitor) isFromSameComposeProject(labels map[string]string) bool {
 }
 
 func (m *Monitor) monitorContainers(ctx context.Context) error {
-	containers, err := m.client.ContainerList(ctx, types.ContainerListOptions{All: true})
+	containers, err := m.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
 		return fmt.Errorf("failed to list containers: %w", err)
 	}
 
-	var metrics []ContainerMetrics
+	var metrics []logger.ContainerMetrics
 
 	for _, container := range containers {
 		// Skip if not from the same Docker Compose project
@@ -142,19 +149,20 @@ func (m *Monitor) monitorContainers(ctx context.Context) error {
 			continue
 		}
 
-		metric := ContainerMetrics{
+		metric := logger.ContainerMetrics{
 			Name:      strings.TrimPrefix(container.Names[0], "/"),
 			Status:    container.Status,
 			Image:     container.Image,
 			Timestamp: time.Now(),
 			Labels:    container.Labels,
+			Project:   m.project,
 		}
 
 		// Get container stats only if running
 		if container.State == "running" {
 			stats, err := m.getContainerStats(ctx, container.ID)
 			if err != nil {
-				m.logger.WithError(err).Warnf("Failed to get stats for container %s", metric.Name)
+				m.logManager.LogError(fmt.Sprintf("Failed to get stats for container %s", metric.Name), err)
 			} else {
 				metric.CPUPercent = m.calculateCPUPercent(stats)
 				metric.MemoryUsage = m.formatBytes(stats.MemoryStats.Usage)
@@ -165,51 +173,34 @@ func (m *Monitor) monitorContainers(ctx context.Context) error {
 		metrics = append(metrics, metric)
 	}
 
-	// Log metrics
-	m.logger.WithFields(logrus.Fields{
-		"project":           m.project,
-		"containers_count":  len(metrics),
-		"monitoring_frequency": m.frequency.String(),
-	}).Info("Container monitoring report")
-
-	for _, metric := range metrics {
-		m.logger.WithFields(logrus.Fields{
-			"container_name":   metric.Name,
-			"status":          metric.Status,
-			"image":           metric.Image,
-			"cpu_percent":     metric.CPUPercent,
-			"memory_usage":    metric.MemoryUsage,
-			"memory_limit":    metric.MemoryLimit,
-			"compose_service": metric.Labels["com.docker.compose.service"],
-		}).Info("Container metrics")
-	}
-
-	return nil
+	// Log metrics using the log manager
+	return m.logManager.LogMetrics(metrics)
 }
 
 func (m *Monitor) Start(ctx context.Context) error {
-	m.logger.WithFields(logrus.Fields{
+	m.logManager.LogInfo("Starting Docker container monitor", map[string]interface{}{
 		"project":   m.project,
 		"frequency": m.frequency.String(),
-	}).Info("Starting Docker container monitor")
+	})
 
 	ticker := time.NewTicker(m.frequency)
 	defer ticker.Stop()
 
 	// Initial monitoring
 	if err := m.monitorContainers(ctx); err != nil {
-		m.logger.WithError(err).Error("Initial monitoring failed")
+		m.logManager.LogError("Initial monitoring failed", err)
 		return err
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
-			m.logger.Info("Monitor stopping due to context cancellation")
+			m.logManager.LogInfo("Monitor stopping due to context cancellation", nil)
+			m.logManager.Close()
 			return ctx.Err()
 		case <-ticker.C:
 			if err := m.monitorContainers(ctx); err != nil {
-				m.logger.WithError(err).Error("Monitoring cycle failed")
+				m.logManager.LogError("Monitoring cycle failed", err)
 			}
 		}
 	}
@@ -218,11 +209,14 @@ func (m *Monitor) Start(ctx context.Context) error {
 func main() {
 	monitor, err := NewMonitor()
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create monitor")
+		fmt.Printf("Failed to create monitor: %v\n", err)
+		os.Exit(1)
 	}
 
 	ctx := context.Background()
 	if err := monitor.Start(ctx); err != nil {
-		logrus.WithError(err).Fatal("Monitor failed")
+		monitor.logManager.LogError("Monitor failed", err)
+		monitor.logManager.Close()
+		os.Exit(1)
 	}
 }

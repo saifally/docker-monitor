@@ -9,7 +9,8 @@ A Go-based monitoring agent that runs inside a Docker container to monitor other
 - **Compose-aware monitoring**: Only monitors containers from the same Docker Compose project
 - **Comprehensive metrics**: Tracks container names, status, images, CPU usage, and memory usage
 - **Configurable frequency**: Adjustable monitoring intervals via environment variables
-- **JSON logging**: Structured logging for easy parsing and analysis
+- **Multiple logging drivers**: Support for console, CSV, Excel, and CloudWatch logging
+- **Structured logging**: JSON-based logging for easy parsing and analysis
 - **Security-focused**: Runs as non-root user with read-only Docker socket access
 - **Containerized deployment**: Fully containerized with multi-stage Docker build
 
@@ -24,6 +25,8 @@ A Go-based monitoring agent that runs inside a Docker container to monitor other
 - `github.com/docker/docker` - Docker client library
 - `github.com/docker/go-connections` - Docker connection utilities
 - `github.com/sirupsen/logrus` - Structured logging
+- `github.com/xuri/excelize/v2` - Excel file generation
+- `github.com/aws/aws-sdk-go-v2` - AWS CloudWatch integration
 
 ## Configuration
 
@@ -33,6 +36,91 @@ A Go-based monitoring agent that runs inside a Docker container to monitor other
 |----------|-------------|---------|---------|
 | `MONITOR_FREQUENCY` | Monitoring interval | `30s` | `10s`, `1m`, `5m` |
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `default` | `myapp` |
+| `LOG_CONFIG` | JSON configuration for logging drivers | Console only | See Logging Configuration |
+
+### Logging Configuration
+
+The agent supports multiple logging drivers that can be configured via the `LOG_CONFIG` environment variable or a configuration file. Supported drivers:
+
+#### Console Driver
+- **Description**: Outputs logs to stdout/stderr
+- **Format**: JSON or text format
+- **Use case**: Development, debugging, container logs
+
+#### CSV Driver
+- **Description**: Writes metrics to CSV files
+- **Features**: Automatic header generation, file rotation support
+- **Use case**: Data analysis, spreadsheet import, long-term storage
+
+#### Excel Driver
+- **Description**: Creates Excel workbooks with metrics
+- **Features**: Multiple sheets, charts, formatted data
+- **Use case**: Reporting, business intelligence, data visualization
+
+#### CloudWatch Driver
+- **Description**: Sends logs to AWS CloudWatch Logs
+- **Features**: Structured JSON logs, retention policies, real-time monitoring
+- **Use case**: Production monitoring, alerting, centralized logging
+
+### Example Logging Configurations
+
+#### Single Driver (Console)
+```bash
+# Environment variable
+export LOG_CONFIG='[{"driver":"console","options":{"format":"json","level":"info"}}]'
+```
+
+#### Multiple Drivers
+```bash
+# Environment variable for multiple outputs
+export LOG_CONFIG='[
+  {"driver":"console","options":{"format":"text","level":"info"}},
+  {"driver":"csv","output_path":"/logs/metrics.csv"},
+  {"driver":"excel","output_path":"/logs/metrics.xlsx","options":{"sheet_name":"Metrics"}}
+]'
+```
+
+#### CloudWatch Configuration
+```bash
+export LOG_CONFIG='[{
+  "driver":"cloudwatch",
+  "options":{
+    "log_group":"/docker-monitor/production",
+    "log_stream":"container-monitor-prod",
+    "region":"us-east-1",
+    "retention_days":"30"
+  }
+}]'
+```
+
+#### Configuration File
+Alternatively, create a `config.json` file:
+```json
+[
+  {
+    "driver": "console",
+    "options": {
+      "format": "json",
+      "level": "info"
+    }
+  },
+  {
+    "driver": "csv",
+    "output_path": "/logs/container_metrics.csv",
+    "options": {
+      "info_log_file": "/logs/info.log",
+      "error_log_file": "/logs/errors.log"
+    }
+  },
+  {
+    "driver": "excel",
+    "output_path": "/logs/container_metrics.xlsx",
+    "options": {
+      "sheet_name": "Container Metrics"
+    }
+  }
+]
+```
 
 ### Docker Compose Labels
 

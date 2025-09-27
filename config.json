@@ -1,0 +1,35 @@
+[
+  {
+    "driver": "console",
+    "output_path": "",
+    "options": {
+      "format": "json",
+      "level": "info"
+    }
+  },
+  {
+    "driver": "csv",
+    "output_path": "/logs/container_metrics.csv",
+    "options": {
+      "info_log_file": "/logs/info.log",
+      "error_log_file": "/logs/errors.log"
+    }
+  },
+  {
+    "driver": "excel",
+    "output_path": "/logs/container_metrics.xlsx",
+    "options": {
+      "sheet_name": "Container Metrics"
+    }
+  },
+  {
+    "driver": "cloudwatch",
+    "output_path": "",
+    "options": {
+      "log_group": "/docker-monitor/container-metrics",
+      "log_stream": "container-monitor",
+      "region": "us-east-1",
+      "retention_days": "30"
+    }
+  }
+]

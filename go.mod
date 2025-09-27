@@ -3,9 +3,13 @@ module docker-monitor
 go 1.21
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.24.0
+	github.com/aws/aws-sdk-go-v2/config v1.26.1
+	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.29.0
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/sirupsen/logrus v1.9.3
+	github.com/xuri/excelize/v2 v2.8.0
 )
 
 require (
