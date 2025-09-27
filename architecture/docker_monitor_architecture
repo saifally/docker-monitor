@@ -1,0 +1,90 @@
+digraph "Docker Monitor Architecture" {
+	graph [bgcolor=white fontcolor="#2D3436" fontname="Sans-Serif" fontsize=20 label="Docker Monitor Architecture" nodesep=0.60 pad=1.0 rankdir=TB ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	"0f54c824f0f34d17bc031ae205fc37f1" [label=Administrator height=1.9 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/client\users.png" shape=none]
+	subgraph "cluster_Configuration Sources" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Configuration Sources" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"98f3fad338774bb5abbb1a18f2bf242a" [label="Environment
+Variables" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/generic/storage\storage.png" shape=none]
+		e9f21c7aed2043afbee898a80dc144d9 [label="config.yaml
+(YAML Config)" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/generic/storage\storage.png" shape=none]
+	}
+	subgraph "cluster_Docker Monitor Application" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Docker Monitor Application" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		subgraph "cluster_Main Process (main.go)" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Main Process (main.go)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			da7126bf9bd0473c8dc3fc9c6086d133 [label="Monitor
+Struct" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+			"722014118d344381b1a0ed2814d73443" [label="NewMonitor()
+Constructor" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+			ba157018fb894e579fc1912c97b7ce73 [label="CPU & Memory
+Calculations" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+		}
+		subgraph "cluster_Logger Package" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Logger Package" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			d8b20ea3f32740ff9ce0dc1427283101 [label="LogManager
+(Orchestrator)" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+			"53c27fed389341c9832a3d69554f51dc" [label="LogDriver
+Interface" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+		}
+		subgraph "cluster_Logging Drivers" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Logging Drivers" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"61306edbda484582a7c8d73f08e8aa42" [label="Console
+Driver" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+			b2261c29bb02429db0b0e7f9ff1b7c64 [label="CSV
+Driver" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+			"3dccfba75cbf4453b1f1ca256c880981" [label="Excel
+Driver" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+			f8e8ca8834c44e42a069633ea1d78c18 [label="CloudWatch
+Driver" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/programming/language\go.png" shape=none]
+		}
+	}
+	subgraph "cluster_Docker Environment" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Docker Environment" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		e65304f8638f42d59feaba97ce5cc4ed [label="Docker
+Daemon" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/container\docker.png" shape=none]
+		eafc114f56bc44689b9eac80ca700d17 [label="Docker
+API" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/container\docker.png" shape=none]
+		fdf0aa6f455d492483bb47063b16aaf6 [label="App
+Container" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/container\docker.png" shape=none]
+		"8a9dc9a2cb7248118f34580248737ca9" [label="Redis
+Container" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/container\docker.png" shape=none]
+		"49ec7b71abbf4f87a06069d63ef7d129" [label="DB
+Container" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/container\docker.png" shape=none]
+	}
+	subgraph "cluster_Output Destinations" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Output Destinations" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		e54f3e7428cb4da09c0a020c4a4806f0 [label="Console
+(stdout/stderr)" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/onprem/compute\server.png" shape=none]
+		"696c9b2505c047af82738a0c1eb3601b" [label="CSV Files
+(/logs/*.csv)" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/generic/storage\storage.png" shape=none]
+		"104383f10d82499b8156a911b563537e" [label="Excel Files
+(/logs/*.xlsx)" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/generic/storage\storage.png" shape=none]
+		c72b58c16eb34262979005b97258cf6b [label="AWS CloudWatch
+Logs" height=2.3 image="C:\Users\Saif\AppData\Roaming\Python\Python313\site-packages\resources/aws/management\cloudwatch.png" shape=none]
+	}
+	"0f54c824f0f34d17bc031ae205fc37f1" -> "98f3fad338774bb5abbb1a18f2bf242a" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"0f54c824f0f34d17bc031ae205fc37f1" -> e9f21c7aed2043afbee898a80dc144d9 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"98f3fad338774bb5abbb1a18f2bf242a" -> "722014118d344381b1a0ed2814d73443" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	e9f21c7aed2043afbee898a80dc144d9 -> "722014118d344381b1a0ed2814d73443" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"722014118d344381b1a0ed2814d73443" -> da7126bf9bd0473c8dc3fc9c6086d133 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"722014118d344381b1a0ed2814d73443" -> d8b20ea3f32740ff9ce0dc1427283101 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	da7126bf9bd0473c8dc3fc9c6086d133 -> eafc114f56bc44689b9eac80ca700d17 [label="Docker Client" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	eafc114f56bc44689b9eac80ca700d17 -> e65304f8638f42d59feaba97ce5cc4ed [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	e65304f8638f42d59feaba97ce5cc4ed -> fdf0aa6f455d492483bb47063b16aaf6 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	e65304f8638f42d59feaba97ce5cc4ed -> "8a9dc9a2cb7248118f34580248737ca9" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	e65304f8638f42d59feaba97ce5cc4ed -> "49ec7b71abbf4f87a06069d63ef7d129" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	eafc114f56bc44689b9eac80ca700d17 -> da7126bf9bd0473c8dc3fc9c6086d133 [label="Container Stats" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	da7126bf9bd0473c8dc3fc9c6086d133 -> ba157018fb894e579fc1912c97b7ce73 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	da7126bf9bd0473c8dc3fc9c6086d133 -> d8b20ea3f32740ff9ce0dc1427283101 [label=ContainerMetrics dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d8b20ea3f32740ff9ce0dc1427283101 -> "53c27fed389341c9832a3d69554f51dc" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"53c27fed389341c9832a3d69554f51dc" -> "61306edbda484582a7c8d73f08e8aa42" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"53c27fed389341c9832a3d69554f51dc" -> b2261c29bb02429db0b0e7f9ff1b7c64 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"53c27fed389341c9832a3d69554f51dc" -> "3dccfba75cbf4453b1f1ca256c880981" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"53c27fed389341c9832a3d69554f51dc" -> f8e8ca8834c44e42a069633ea1d78c18 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"61306edbda484582a7c8d73f08e8aa42" -> e54f3e7428cb4da09c0a020c4a4806f0 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	b2261c29bb02429db0b0e7f9ff1b7c64 -> "696c9b2505c047af82738a0c1eb3601b" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"3dccfba75cbf4453b1f1ca256c880981" -> "104383f10d82499b8156a911b563537e" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	f8e8ca8834c44e42a069633ea1d78c18 -> c72b58c16eb34262979005b97258cf6b [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}

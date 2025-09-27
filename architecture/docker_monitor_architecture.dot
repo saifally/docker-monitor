@@ -1,0 +1,129 @@
+
+digraph "Docker Monitor Architecture" {
+    graph [fontsize=20, bgcolor=white, pad=1.0, splines=ortho, rankdir=TB];
+    node [shape=box, style=filled, fontname="Arial"];
+    edge [fontname="Arial"];
+
+    // Styling
+    subgraph cluster_config {
+        label="Configuration Sources";
+        style=filled;
+        fillcolor=lightblue;
+        env_vars [label="Environment
+Variables", fillcolor=lightgray];
+        yaml_config [label="config.yaml
+(YAML Config)", fillcolor=lightgray];
+    }
+
+    subgraph cluster_main_app {
+        label="Docker Monitor Application";
+        style=filled;
+        fillcolor=lightgreen;
+
+        subgraph cluster_main_process {
+            label="Main Process (main.go)";
+            style=filled;
+            fillcolor=white;
+            monitor [label="Monitor
+Struct", fillcolor=yellow];
+            constructor [label="NewMonitor()
+Constructor", fillcolor=yellow];
+            stats_calc [label="CPU & Memory
+Calculations", fillcolor=yellow];
+        }
+
+        subgraph cluster_logger_package {
+            label="Logger Package";
+            style=filled;
+            fillcolor=white;
+            log_manager [label="LogManager
+(Orchestrator)", fillcolor=orange];
+            log_interface [label="LogDriver
+Interface", fillcolor=orange];
+        }
+
+        subgraph cluster_drivers {
+            label="Logging Drivers";
+            style=filled;
+            fillcolor=white;
+            console_driver [label="Console
+Driver", fillcolor=pink];
+            csv_driver [label="CSV
+Driver", fillcolor=pink];
+            excel_driver [label="Excel
+Driver", fillcolor=pink];
+            cloudwatch_driver [label="CloudWatch
+Driver", fillcolor=pink];
+        }
+    }
+
+    subgraph cluster_docker {
+        label="Docker Environment";
+        style=filled;
+        fillcolor=lightcyan;
+        docker_daemon [label="Docker
+Daemon", fillcolor=cyan];
+        docker_api [label="Docker
+API", fillcolor=cyan];
+        app_container [label="App
+Container", fillcolor=cyan];
+        redis_container [label="Redis
+Container", fillcolor=cyan];
+        db_container [label="DB
+Container", fillcolor=cyan];
+    }
+
+    subgraph cluster_outputs {
+        label="Output Destinations";
+        style=filled;
+        fillcolor=lightyellow;
+        console_out [label="Console
+(stdout/stderr)", fillcolor=wheat];
+        csv_files [label="CSV Files
+(/logs/*.csv)", fillcolor=wheat];
+        excel_files [label="Excel Files
+(/logs/*.xlsx)", fillcolor=wheat];
+        aws_cloudwatch [label="AWS CloudWatch
+Logs", fillcolor=wheat];
+    }
+
+    // Admin user
+    admin [label="Administrator", fillcolor=lightcoral];
+
+    // Configuration flow
+    admin -> env_vars [label="configures"];
+    admin -> yaml_config [label="configures"];
+
+    // Application initialization
+    env_vars -> constructor [label="environment"];
+    yaml_config -> constructor [label="config"];
+    constructor -> monitor [label="creates"];
+    constructor -> log_manager [label="initializes"];
+
+    // Docker monitoring flow
+    monitor -> docker_api [label="Docker Client"];
+    docker_api -> docker_daemon [label="API calls"];
+    docker_daemon -> app_container [label="manages"];
+    docker_daemon -> redis_container [label="manages"];
+    docker_daemon -> db_container [label="manages"];
+
+    // Statistics collection
+    docker_api -> monitor [label="Container Stats"];
+    monitor -> stats_calc [label="processes"];
+
+    // Logging flow
+    monitor -> log_manager [label="ContainerMetrics"];
+    log_manager -> log_interface [label="orchestrates"];
+
+    // Driver implementations
+    log_interface -> console_driver [label="implements"];
+    log_interface -> csv_driver [label="implements"];
+    log_interface -> excel_driver [label="implements"];
+    log_interface -> cloudwatch_driver [label="implements"];
+
+    // Output destinations
+    console_driver -> console_out [label="outputs"];
+    csv_driver -> csv_files [label="writes"];
+    excel_driver -> excel_files [label="writes"];
+    cloudwatch_driver -> aws_cloudwatch [label="sends"];
+}
