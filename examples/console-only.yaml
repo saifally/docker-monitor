@@ -1,0 +1,7 @@
+# Simple console-only logging configuration
+# Perfect for development and Kubernetes deployments
+
+- driver: console
+  options:
+    format: json
+    level: info

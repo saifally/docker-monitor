@@ -1,0 +1,7 @@
+# Kubernetes-optimized configuration
+# Console logging for integration with K8s logging infrastructure
+
+- driver: console
+  options:
+    format: json  # Structured JSON for log aggregators
+    level: info   # Standard info level for production

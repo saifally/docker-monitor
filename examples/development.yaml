@@ -1,0 +1,18 @@
+# Development configuration with local file outputs
+# Great for testing and local development
+
+- driver: console
+  options:
+    format: text
+    level: debug
+
+- driver: csv
+  output_path: ./logs/dev_metrics.csv
+  options:
+    info_log_file: ./logs/dev_info.log
+    error_log_file: ./logs/dev_errors.log
+
+- driver: excel
+  output_path: ./logs/dev_metrics.xlsx
+  options:
+    sheet_name: Development Metrics

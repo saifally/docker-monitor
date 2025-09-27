@@ -56,10 +56,106 @@ docker run -d \
 | `MONITOR_FREQUENCY` | `30s` | How often to collect metrics (e.g., `10s`, `1m`, `5m`) |
 | `COMPOSE_PROJECT_NAME` | `default` | Docker Compose project name to monitor |
 | `DOCKER_COMPOSE_PROJECT` | - | Alternative project name variable |
+| `LOG_CONFIG` | Console only | YAML configuration for logging drivers |
+| `CONFIG_FILE` | `/app/config.yaml` | Path to YAML configuration file |
+
+### Logging Configuration
+
+The monitor supports multiple logging drivers that can be configured via YAML format either through environment variables or configuration files.
+
+#### Available Drivers
+
+- **Console**: Outputs logs to stdout/stderr with JSON or text format
+- **CSV**: Writes metrics to CSV files with automatic header generation
+- **Excel**: Creates Excel workbooks with metrics and formatted data
+- **CloudWatch**: Sends logs to AWS CloudWatch Logs with structured JSON
+
+#### YAML Configuration Examples
+
+**Single Driver (Console)**
+```yaml
+- driver: console
+  options:
+    format: json
+    level: info
+```
+
+**Multiple Drivers**
+```yaml
+- driver: console
+  options:
+    format: text
+    level: info
+- driver: csv
+  output_path: /logs/metrics.csv
+- driver: excel
+  output_path: /logs/metrics.xlsx
+  options:
+    sheet_name: Metrics
+```
+
+**CloudWatch Configuration**
+```yaml
+- driver: cloudwatch
+  options:
+    log_group: /docker-monitor/production
+    log_stream: container-monitor-prod
+    region: us-east-1
+    retention_days: "30"
+```
+
+#### Configuration Methods
+
+**1. Environment Variable (Docker Compose)**
+```yaml
+services:
+  docker-monitor:
+    environment:
+      LOG_CONFIG: |
+        - driver: console
+          options:
+            format: json
+            level: info
+        - driver: csv
+          output_path: /logs/metrics.csv
+```
+
+**2. Configuration File**
+```yaml
+# config.yaml
+- driver: console
+  options:
+    format: json
+    level: info
+- driver: csv
+  output_path: /logs/container_metrics.csv
+  options:
+    info_log_file: /logs/info.log
+    error_log_file: /logs/errors.log
+```
+
+**3. Kubernetes ConfigMap**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-monitor-config
+data:
+  config.yaml: |
+    - driver: console
+      options:
+        format: json
+        level: info
+    - driver: cloudwatch
+      options:
+        log_group: /k8s/docker-monitor
+        log_stream: container-monitor
+        region: us-east-1
+```
 
 ### Docker Compose Configuration
 
-The included `docker-compose.yml` provides a complete monitoring setup with example services:
+The included `docker-compose.yml` provides a complete monitoring setup with YAML logging configuration:
 
 ```yaml
 version: '3.8'
@@ -69,12 +165,19 @@ services:
     build: .
     container_name: docker-monitor
     environment:
-      - MONITOR_FREQUENCY=30s
-      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-docker-monitor}
+      MONITOR_FREQUENCY: 30s
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-docker-monitor}
+      # Clean YAML configuration using multi-line string
+      LOG_CONFIG: |
+        - driver: console
+          options:
+            format: json
+            level: info
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./logs:/logs  # For CSV/Excel output
+      - ./config.yaml:/app/config.yaml:ro  # YAML config file
     restart: unless-stopped
-    privileged: true
     depends_on:
       - app
       - redis
@@ -84,6 +187,7 @@ services:
   # Example services to monitor
   app:
     image: nginx:alpine
+    container_name: example-app
     ports:
       - "8081:80"
     networks:
@@ -138,8 +242,21 @@ docker-monitor/
 ├── main.go              # Main application code
 ├── main_test.go         # Unit tests
 ├── go.mod               # Go module dependencies
+├── logger/              # Logging drivers package
+│   ├── types.go         # Common types and interfaces
+│   ├── manager.go       # Log manager orchestration
+│   ├── console.go       # Console logging driver
+│   ├── csv.go          # CSV file logging driver
+│   ├── excel.go        # Excel file logging driver
+│   └── cloudwatch.go   # AWS CloudWatch logging driver
+├── config.yaml          # Default YAML configuration
+├── examples/            # Configuration examples
+│   ├── console-only.yaml
+│   ├── development.yaml
+│   ├── kubernetes.yaml
+│   └── console-cloudwatch.yaml
 ├── Dockerfile           # Container build configuration
-├── docker-compose.yml   # Complete monitoring stack
+├── docker-compose.yml   # Complete monitoring stack with YAML config
 └── README.md           # This file
 ```
 
