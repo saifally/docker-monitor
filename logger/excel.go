@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/xuri/excelize/v2"
@@ -237,7 +236,7 @@ func (e *ExcelDriver) CreateChart() error {
 		return fmt.Errorf("insufficient data for chart creation")
 	}
 
-	// Create chart
+	// Create chart - simplified version without Title field that's not available in this excelize version
 	chart := excelize.Chart{
 		Type: excelize.Line,
 		Series: []excelize.ChartSeries{
@@ -246,9 +245,6 @@ func (e *ExcelDriver) CreateChart() error {
 				Categories: fmt.Sprintf("%s!$A$2:$A$%d", e.sheetName, len(rows)),
 				Values:     fmt.Sprintf("%s!$E$2:$E$%d", e.sheetName, len(rows)),
 			},
-		},
-		Title: excelize.ChartTitle{
-			Name: "Container CPU Usage Over Time",
 		},
 		PlotArea: excelize.ChartPlotArea{
 			ShowCatName:     false,

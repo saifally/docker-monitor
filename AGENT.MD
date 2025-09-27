@@ -36,7 +36,7 @@ A Go-based monitoring agent that runs inside a Docker container to monitor other
 |----------|-------------|---------|---------|
 | `MONITOR_FREQUENCY` | Monitoring interval | `30s` | `10s`, `1m`, `5m` |
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `default` | `myapp` |
-| `LOG_CONFIG` | JSON configuration for logging drivers | Console only | See Logging Configuration |
+| `LOG_CONFIG` | YAML configuration for logging drivers | Console only | See Logging Configuration |
 
 ### Logging Configuration
 
@@ -66,60 +66,60 @@ The agent supports multiple logging drivers that can be configured via the `LOG_
 
 #### Single Driver (Console)
 ```bash
-# Environment variable
-export LOG_CONFIG='[{"driver":"console","options":{"format":"json","level":"info"}}]'
+# Environment variable using YAML format
+export LOG_CONFIG='
+- driver: console
+  options:
+    format: json
+    level: info
+'
 ```
 
 #### Multiple Drivers
 ```bash
 # Environment variable for multiple outputs
-export LOG_CONFIG='[
-  {"driver":"console","options":{"format":"text","level":"info"}},
-  {"driver":"csv","output_path":"/logs/metrics.csv"},
-  {"driver":"excel","output_path":"/logs/metrics.xlsx","options":{"sheet_name":"Metrics"}}
-]'
+export LOG_CONFIG='
+- driver: console
+  options:
+    format: text
+    level: info
+- driver: csv
+  output_path: /logs/metrics.csv
+- driver: excel
+  output_path: /logs/metrics.xlsx
+  options:
+    sheet_name: Metrics
+'
 ```
 
 #### CloudWatch Configuration
 ```bash
-export LOG_CONFIG='[{
-  "driver":"cloudwatch",
-  "options":{
-    "log_group":"/docker-monitor/production",
-    "log_stream":"container-monitor-prod",
-    "region":"us-east-1",
-    "retention_days":"30"
-  }
-}]'
+export LOG_CONFIG='
+- driver: cloudwatch
+  options:
+    log_group: /docker-monitor/production
+    log_stream: container-monitor-prod
+    region: us-east-1
+    retention_days: "30"
+'
 ```
 
 #### Configuration File
-Alternatively, create a `config.json` file:
-```json
-[
-  {
-    "driver": "console",
-    "options": {
-      "format": "json",
-      "level": "info"
-    }
-  },
-  {
-    "driver": "csv",
-    "output_path": "/logs/container_metrics.csv",
-    "options": {
-      "info_log_file": "/logs/info.log",
-      "error_log_file": "/logs/errors.log"
-    }
-  },
-  {
-    "driver": "excel",
-    "output_path": "/logs/container_metrics.xlsx",
-    "options": {
-      "sheet_name": "Container Metrics"
-    }
-  }
-]
+Alternatively, create a `config.yaml` file:
+```yaml
+- driver: console
+  options:
+    format: json
+    level: info
+- driver: csv
+  output_path: /logs/container_metrics.csv
+  options:
+    info_log_file: /logs/info.log
+    error_log_file: /logs/errors.log
+- driver: excel
+  output_path: /logs/container_metrics.xlsx
+  options:
+    sheet_name: Container Metrics
 ```
 
 ### Docker Compose Labels

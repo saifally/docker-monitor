@@ -1,0 +1,31 @@
+# Docker Monitor Logging Configuration
+# This YAML configuration is much cleaner and more readable than JSON
+
+# Console Driver - outputs to stdout/stderr
+- driver: console
+  output_path: ""
+  options:
+    format: json
+    level: info
+
+# CSV Driver - outputs to CSV files
+- driver: csv
+  output_path: /logs/container_metrics.csv
+  options:
+    info_log_file: /logs/info.log
+    error_log_file: /logs/errors.log
+
+# Excel Driver - outputs to Excel workbooks
+- driver: excel
+  output_path: /logs/container_metrics.xlsx
+  options:
+    sheet_name: Container Metrics
+
+# CloudWatch Driver - outputs to AWS CloudWatch Logs
+- driver: cloudwatch
+  output_path: ""
+  options:
+    log_group: /docker-monitor/container-metrics
+    log_stream: container-monitor
+    region: us-east-1
+    retention_days: "30"

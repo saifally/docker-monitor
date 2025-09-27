@@ -1,0 +1,14 @@
+# Dual logging: Console + CloudWatch
+# Perfect for production environments with local debugging and cloud monitoring
+
+- driver: console
+  options:
+    format: json
+    level: info
+
+- driver: cloudwatch
+  options:
+    log_group: /k8s/docker-monitor
+    log_stream: container-monitor-prod
+    region: us-east-1
+    retention_days: "90"

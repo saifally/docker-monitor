@@ -5,14 +5,18 @@ services:
     build: .
     container_name: docker-monitor
     environment:
-      - MONITOR_FREQUENCY=30s
-      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-docker-monitor}
-      # Console only (default)
-      - LOG_CONFIG=[{"driver":"console","options":{"format":"json","level":"info"}}]
+      MONITOR_FREQUENCY: 30s
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-docker-monitor}
+      # Clean YAML configuration using multi-line string
+      LOG_CONFIG: |
+        - driver: console
+          options:
+            format: json
+            level: info
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./logs:/logs  # For CSV/Excel output
-      - ./config.json:/app/config.json:ro  # Optional config file
+      - ./config.yaml:/app/config.yaml:ro  # YAML config file
     restart: unless-stopped
     depends_on:
       - app
@@ -25,10 +29,20 @@ services:
     build: .
     container_name: docker-monitor-multi
     environment:
-      - MONITOR_FREQUENCY=30s
-      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-docker-monitor}
-      # Multiple logging drivers
-      - LOG_CONFIG=[{"driver":"console","options":{"format":"text"}},{"driver":"csv","output_path":"/logs/metrics.csv"},{"driver":"excel","output_path":"/logs/metrics.xlsx","options":{"sheet_name":"Metrics"}}]
+      MONITOR_FREQUENCY: 30s
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-docker-monitor}
+      # Multiple logging drivers in clean YAML format
+      LOG_CONFIG: |
+        - driver: console
+          options:
+            format: text
+            level: info
+        - driver: csv
+          output_path: /logs/metrics.csv
+        - driver: excel
+          output_path: /logs/metrics.xlsx
+          options:
+            sheet_name: Metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./logs:/logs
@@ -46,12 +60,19 @@ services:
     build: .
     container_name: docker-monitor-cloudwatch
     environment:
-      - MONITOR_FREQUENCY=30s
-      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-docker-monitor}
-      - LOG_CONFIG=[{"driver":"cloudwatch","options":{"log_group":"/docker-monitor/production","log_stream":"container-monitor","region":"us-east-1","retention_days":"30"}}]
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION:-us-east-1}
+      MONITOR_FREQUENCY: 30s
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-docker-monitor}
+      # CloudWatch configuration in clean YAML format
+      LOG_CONFIG: |
+        - driver: cloudwatch
+          options:
+            log_group: /docker-monitor/production
+            log_stream: container-monitor
+            region: us-east-1
+            retention_days: "30"
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
