@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  docker-monitor:
+    build: .
+    container_name: docker-monitor
+    environment:
+      - MONITOR_FREQUENCY=30s
+      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-docker-monitor}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    privileged: true
+    depends_on:
+      - app
+      - redis
+    networks:
+      - monitor-network
+
+  # Example application services to monitor
+  app:
+    image: nginx:alpine
+    container_name: example-app
+    ports:
+      - "8081:80"
+    networks:
+      - monitor-network
+
+  redis:
+    image: redis:alpine
+    container_name: example-redis
+    networks:
+      - monitor-network
+      
+networks:
+  monitor-network:
+    driver: bridge
