@@ -386,23 +386,62 @@ func main() {
 Key Go Language Concepts Demonstrated:
 
 1. **Package System**: Code organization with main package and imports
+   Example: Lines 3, 7-23 - Package declaration and import statements
+
 2. **Struct Types**: Custom data types that group related data
+   Example: Lines 28-45 - Monitor struct with client, logManager, frequency, and project fields
+
 3. **Methods**: Functions that operate on specific types (receivers)
+   Example: Lines 135, 165, 186 - Methods with (m *Monitor) receiver
+
 4. **Pointers**: References to memory addresses (*, &)
+   Example: Lines 33, 36, 123, 159 - Pointer declarations and address operators
+
 5. **Error Handling**: Explicit error checking with multiple return values
+   Example: Lines 53, 59-63 - Multiple return values with error checking
+
 6. **Slices**: Dynamic arrays that can grow and shrink
+   Example: Lines 221-225, 301 - Slice literal and append operation
+
 7. **Maps**: Hash tables/dictionaries for key-value storage
+   Example: Lines 218, 232, 314 - Map declarations and lookups
+
 8. **Channels**: Communication mechanism for concurrent programming
+   Example: Lines 320-321, 340, 347 - Ticker channel and select cases
+
 9. **Interfaces**: Contracts that types can implement (interface{})
+   Example: Line 313 - map[string]interface{} for mixed-type values
+
 10. **Goroutines**: Lightweight threads (not used here but ticker uses them)
+    Example: Line 321 - time.NewTicker creates background goroutines
+
 11. **Defer**: Resource cleanup that runs when function exits
+    Example: Lines 146, 325 - defer statements for cleanup
+
 12. **Select**: Choose between multiple channel operations
+    Example: Lines 337-354 - select statement with multiple cases
+
 13. **Type Conversion**: Explicit conversion between types
+    Example: Lines 168-169, 177 - float64() conversions
+
 14. **String Operations**: Manipulation and formatting of text
+    Example: Lines 193, 213, 275 - fmt.Sprintf and strings.TrimPrefix
+
 15. **Time Handling**: Duration and timestamp operations
+    Example: Lines 97, 103, 278 - time.Duration and time.Now()
+
 16. **JSON Operations**: Encoding and decoding structured data
+    Example: Lines 153-155 - JSON decoding from Docker API
+
 17. **File Operations**: Reading files and environment variables
+    Example: Lines 70, 81, 96 - os.Getenv and os.Stat
+
 18. **Context**: Managing request lifecycles and cancellation
+    Example: Lines 135, 340, 374 - context.Context usage
+
 19. **Constants**: Compile-time constant values
+    Example: Line 189 - const unit = 1024
+
 20. **Zero Values**: Default values for uninitialized variables
+    Example: Lines 149, 260 - var declarations with zero values
 */
